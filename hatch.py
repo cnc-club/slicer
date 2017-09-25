@@ -1,4 +1,7 @@
 import re
+import math
+import inc.points
+
 class Path() :
     def __init__(self):
             self.items = []
@@ -12,32 +15,30 @@ class Path() :
                 b[2] = max(b[2],p[0])
                 b[3] = max(b[3],p[1])
         return b
-
+        
     def hatches(self, l=10, st=0.1, ang = 45):
+        hatch = P(l,0).rot(ang/180*math.pi) 
         b = self.bounds()
-        b = [b[0]-1, b[1]-1, b[2]+1, b[3]+2]
-        x,y = b[0],b[1]
+        b = [b[0]-1, b[1]-1, b[2]+1+hatch.x, b[3]+1+hatch.y]
+        x,y = b[0]+hatch.x,b[1]
         h = []
-        while x<b[2] and y<b[3] :
-            d = 0
+        ls = l/math.sqrt(2)
+        sts = st/math.sqrt(2)
+        i = 0
+        while x<b[2]+ls + b[3]-b[1] :
 
-            while d<b[3]-b[1]:
-                h.append([
-                    [x+d,   ]
-
-                ])
-                y0+=st
-
-            h.append(
-                    [
-                        [x,b[1]],
-                        [x+st,b[1]],
-                        [b[0],y+st],
-                        [b[0],y]
-                    ]
-                )
-            x += l
-            y += l
+        
+        	x1 = x+ls
+        	y1 = b[1]
+        	while y1<b[3]+ls and x1>b[0] :
+        		if i%2 == 0 :
+	        		h.append([  [x1,y1],[x1-ls,y1-ls]] )
+	        	else :
+	        		h.append([  [x1-ls,y1-ls],[x1,y1]] )
+        		i += 1 
+        		x1 -= sts
+        		y1 += sts
+	        x += ls
 
 
 
