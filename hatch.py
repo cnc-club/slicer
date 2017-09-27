@@ -41,7 +41,14 @@ class Path() :
 					i += 1 				
 				x0 += l*math.sqrt(2)
 		else :
-			pass
+			x0 = b[2]
+			while x0>b[0]  b[2]-b[1] :
+				y = y0
+				x = b[0]
+				while y>b[1] and x<b[2] :
+					x += sts
+					y -= sts
+
 
 		def check_sp(sp,b):
 			return b[0]<sp[0][0]<b[2] and  b[1]<sp[0][1]<b[3] or b[0]<sp[1][0]<b[2] and  b[1]<sp[1][1]<b[3]
