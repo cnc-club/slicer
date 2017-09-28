@@ -1,5 +1,6 @@
 import re
 import math
+import pyclipper
 from inc.points import P
 
 class Path() :
@@ -15,8 +16,12 @@ class Path() :
 				b[2] = max(b[2],p[0])
 				b[3] = max(b[3],p[1])
 		return b
+	
+	def clean(self) :
+		self.items = [sp for sp in self.items if len(sp)>1]
 		
 	def hatches(self, l=10, st=0.1, layer=0):
+		self.clean()
 		b0 = self.bounds()
 		b = [b0[0]-l, b0[1]-l, b0[2]+l, b0[3]+l]
 
@@ -33,7 +38,6 @@ class Path() :
 				while x>b[0] and y<b[3] :
 					x -= sts
 					y += sts
-				
 					if i%2 == 0 :
 						h.append([  [x,y],[x-ls,y-ls]] )
 					else :
@@ -41,22 +45,36 @@ class Path() :
 					i += 1 				
 				x0 += l*math.sqrt(2)
 		else :
-			x0 = b[2]
-			while x0>b[0]  b[2]-b[1] :
-				y = y0
-				x = b[0]
-				while y>b[1] and x<b[2] :
+			x0 = b[0] - b[3]-b[1]
+			while x0<b[2] :
+				x = x0
+				y = b[1]
+				while y<b[3] and x<b[2] :
 					x += sts
-					y -= sts
-
+					y += sts
+					if i%2 == 0 :
+						h.append([  [x,y],[x+ls,y+ls]] )
+					else :
+						h.append([  [x+ls,y+ls],[x,y]] )
+					i += 1 				
+				x0 += l*math.sqrt(2)
 
 		def check_sp(sp,b):
 			return b[0]<sp[0][0]<b[2] and  b[1]<sp[0][1]<b[3] or b[0]<sp[1][0]<b[2] and  b[1]<sp[1][1]<b[3]
 			
 		h = [sp for sp in h if check_sp(sp,b)]
-		for sp in h: 
-			print "M",sp[0][0],sp[0][1],sp[1][0],sp[1][1],
-		print 
+
+		pc = pyclipper.Pyclipper()
+		print self.items
+		pc.AddPaths(pyclipper.scale_to_clipper(self.items), pyclipper.PT_CLIP, True)
+		pc.AddPaths(pyclipper.scale_to_clipper(h), pyclipper.PT_SUBJECT, False)
+		solution = pc.Execute2(pyclipper.CT_INTERSECTION, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
+		
+		print dir(solution)
+
+#		for sp in h: 
+#			print "M",sp[0][0],sp[0][1],sp[1][0],sp[1][1],
+#		print 
 		print 
 
 	def line_to(self, x,y) :
